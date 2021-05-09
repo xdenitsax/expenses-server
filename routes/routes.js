@@ -4,7 +4,7 @@ const Post = require('../models/Post')
 
 //GETS BACK ALL THE POSTS
 
-router.get('/', async (req, res) => {
+router.get('/transactions', async (req, res) => {
   try {
     //Post from models
     const posts = await Post.find()
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 })
 
 //SUBMIT A POST
-router.post('/', async (req, res) => {
+router.post('/create', async (req, res) => {
   const post = new Post({
     title: req.body.title,
     amount: req.body.amount,
@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
 //SPECIFIC POST
 //everything after the http://localhost:3000/post will be the postId
 //we can find a specific post by id
-router.get('/:postId', async (req, res) => {
+router.get('/get/:postId', async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId)
     res.json(post)
@@ -40,7 +40,7 @@ router.get('/:postId', async (req, res) => {
 })
 
 //Delete a specific post
-router.delete('/:postId', async (req, res) => {
+router.delete('/delete/:postId', async (req, res) => {
   try {
     const removedPost = await Post.remove({ _id: req.params.postId })
     res.json(removedPost)
@@ -50,7 +50,7 @@ router.delete('/:postId', async (req, res) => {
 })
 
 //Update  a post
-router.patch('/:postId', async (req, res) => {
+router.patch('/update/:postId', async (req, res) => {
   try {
     const updatedPost = await Post.updateOne(
       { _id: req.params.postId },

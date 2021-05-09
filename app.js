@@ -1,18 +1,16 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const bodyParser = require('body-parser')
 const app = express()
 require('dotenv/config')
 
-app.use(bodyParser.json())
+app.use(express.json())
 
 //Import Routes
-
-const postRoute = require('./routes/PostTransaction')
+const routes = require('./routes/routes')
 
 //Middleware -> we can have multiple middlewere
 
-app.use('/postTransaction', postRoute)
+app.use('/', routes)
 
 // ROUTS
 app.get('/', (req, res) => {
