@@ -4,7 +4,7 @@ const Post = require('../models/Post')
 
 //GETS BACK ALL THE POSTS
 
-router.get('/transactions', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     //Post from models
     const posts = await Post.find()
@@ -16,6 +16,7 @@ router.get('/transactions', async (req, res) => {
 
 //SUBMIT A POST
 router.post('/create', async (req, res) => {
+  console.log(req.body)
   const post = new Post({
     title: req.body.title,
     amount: req.body.amount,
@@ -24,7 +25,7 @@ router.post('/create', async (req, res) => {
     const savedPost = await post.save()
     res.json(savedPost)
   } catch (err) {
-    res.json({ message: err })
+    res.status(400).json({ message: err })
   }
 })
 //SPECIFIC POST

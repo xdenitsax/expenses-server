@@ -1,18 +1,18 @@
 const mongoose = require('mongoose')
 
-const PostSchema = mongoose.Schema({
-  title: {
+const Session = mongoose.Schema({
+  token: {
     type: String,
     required: true,
   },
-  amount: {
+  userId: {
     type: String,
     required: true,
   },
-  date: {
+  expiresAt: {
     type: Date,
-    default: Date.now,
+    required: true,
   },
 })
 
-module.exports = mongoose.model('Post', PostSchema)
+module.exports = mongoose.model('Session', Session)
