@@ -5,7 +5,6 @@ const User = require('../models/User')
 const Session = require('../models/Session')
 
 // Get all users
-
 router.get('/', async (req, res) => {
   try {
     const users = await User.find()
@@ -28,13 +27,14 @@ router.post('/register', async (req, res) => {
     try {
       const registeredUser = await user.save()
       res.json(registeredUser)
-    } catch (err) {
-      res.status(400).json({ message: err })
+    } catch (error) {
+      res.status(400).json({ message: error._message })
     }
   } else {
     res.status(400).json({ message: 'Username is taken' })
   }
 })
+
 //Login
 router.post('/login', async (req, res) => {
   const existingUser = await User.findOne({ username: req.body.username })
