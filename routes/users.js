@@ -5,10 +5,28 @@ const User = require('../models/User')
 const Session = require('../models/Session')
 
 // Get all users
-router.get('/', async (req, res) => {
+router.get('/users', async (req, res) => {
   try {
     const users = await User.find()
     res.json(users)
+  } catch (err) {
+    res.json({ message: err })
+  }
+})
+
+// Get single user.
+// everything after the http://localhost:3000/post will be the postId
+// we can find a specific post by id
+router.get('/:userId', async (req, res) => {
+  console.log('req params', req.params.userId)
+  try {
+    // const { firstName, lastName } = await User.findOne({ id: req.params.userId })
+    const user = await User.findOne({ _id: req.params.userId })
+    if (!user) {
+      res.json({ message: 'User does not exist' })
+      return
+    }
+    res.json({ firstName: user.firstName, lastName: user.lastName })
   } catch (err) {
     res.json({ message: err })
   }
@@ -25,13 +43,13 @@ router.post('/register', async (req, res) => {
       password: req.body.password,
     })
     try {
-      const registeredUser = await user.save()
-      res.json(registeredUser)
+      await user.save()
+      res.status(201).send()
     } catch (error) {
       res.status(400).json({ message: error._message })
     }
   } else {
-    res.status(400).json({ message: 'Username is taken' })
+    res.status(409).json({ message: 'Username is taken' })
   }
 })
 
@@ -49,13 +67,13 @@ router.post('/login', async (req, res) => {
         expiresAt,
       })
       await session.save()
-      res.send(`Token: Bearer ${token}`)
+      res.status(200).json({ token: `Bearer ${token}`, userId: existingUser._id })
       return
     }
-    res.status(400).json({ message: 'Username or password is incorrect!' })
+    res.status(401).json({ message: 'Username or password is incorrect!' })
     return
   }
-  res.status(400).json({ message: 'Username or password is incorrect!' })
+  res.status(401).json({ message: 'Username or password is incorrect!' })
 })
 
 // SPECIFIC POST
