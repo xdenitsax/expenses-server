@@ -7,12 +7,12 @@ require('dotenv/config')
 app.use(express.json())
 
 //Import Routes
-const routes = require('./routes/routes')
+const transactions = require('./routes/transactions')
 const users = require('./routes/users')
 //Middleware -> we can have multiple middlewere
 // Prevents CORS errors.
 app.use(cors())
-app.use('/transactions', routes)
+app.use('/transactions', transactions)
 app.use('/users', users)
 
 // ROUTS

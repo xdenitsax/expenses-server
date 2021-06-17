@@ -5,7 +5,7 @@ const User = require('../models/User')
 const Session = require('../models/Session')
 
 // Get all users
-router.get('/users', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const users = await User.find()
     res.json(users)
@@ -18,7 +18,6 @@ router.get('/users', async (req, res) => {
 // everything after the http://localhost:3000/post will be the postId
 // we can find a specific post by id
 router.get('/:userId', async (req, res) => {
-  console.log('req params', req.params.userId)
   try {
     // const { firstName, lastName } = await User.findOne({ id: req.params.userId })
     const user = await User.findOne({ _id: req.params.userId })
