@@ -9,7 +9,7 @@ const Session = mongoose.Schema({
     type: String,
     required: true,
   },
-  expiresAt: {
+  lastUsedAt: {
     type: Date,
     required: true,
   },

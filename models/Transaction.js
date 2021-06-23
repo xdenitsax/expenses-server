@@ -6,7 +6,7 @@ const TransactionSchema = mongoose.Schema({
     required: true,
   },
   amount: {
-    type: String,
+    type: Number,
     required: true,
   },
   category: {
@@ -20,6 +20,10 @@ const TransactionSchema = mongoose.Schema({
   date: {
     type: Date,
     default: Date.now,
+  },
+  isExpense: {
+    type: Boolean,
+    required: true,
   },
 })
 

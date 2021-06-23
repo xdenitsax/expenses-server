@@ -14,20 +14,45 @@ router.get('/', async (req, res) => {
   }
 })
 
-// Get single user.
-// everything after the http://localhost:3000/post will be the postId
-// we can find a specific post by id
-router.get('/:userId', async (req, res) => {
+const checkAndUpdateToken = async (req, res) => {
+  const { token } = req.headers
+  const { userId } = req.params
   try {
-    // const { firstName, lastName } = await User.findOne({ id: req.params.userId })
-    const user = await User.findOne({ _id: req.params.userId })
-    if (!user) {
-      res.json({ message: 'User does not exist' })
-      return
+    const session = await Session.findOne({ token })
+    if (!session) {
+      return 'Expired token'
     }
-    res.json({ firstName: user.firstName, lastName: user.lastName })
-  } catch (err) {
-    res.json({ message: err })
+    const timeDiff = (new Date(Date.now()) - session.lastUsedAt) / 1000 / 60
+    if (timeDiff < 10) {
+      const user = await User.findOne({ _id: userId })
+      if (!user) {
+        return 'User does not exist'
+      }
+      return user
+    }
+    return 'Expired token'
+  } catch (error) {
+    return error
+  }
+}
+
+// Get single user.
+router.get('/:userId', async (req, res) => {
+  // console.log(req.headers.token, req.params.userId)
+  try {
+    const user = await checkAndUpdateToken(req, res)
+    if (user === 'Expired token') {
+      return res.status(401).json({ message: 'Expired token' })
+    }
+    if (user === 'User does not exist') {
+      return res.status(400).json({ message: 'User does not exist' })
+    }
+    // Update user token.
+    let lastUsedAt = new Date(Date.now())
+    await Session.findOneAndUpdate({ token: req.headers.token }, { lastUsedAt })
+    return res.status(200).json({ firstName: user.firstName, lastName: user.lastName })
+  } catch (error) {
+    res.json({ message: error })
   }
 })
 
@@ -57,16 +82,15 @@ router.post('/login', async (req, res) => {
   const existingUser = await User.findOne({ username: req.body.username })
   if (existingUser !== null) {
     if (existingUser.password === req.body.password) {
-      const token = uuidv4()
-      // Expires in half an hour from now
-      const expiresAt = new Date(new Date().getTime() + 1800000)
+      const token = `Bearer ${uuidv4()}`
+      const lastUsedAt = new Date(Date.now())
       const session = new Session({
         token,
         userId: existingUser._id,
-        expiresAt,
+        lastUsedAt,
       })
       await session.save()
-      res.status(200).json({ token: `Bearer ${token}`, userId: existingUser._id })
+      res.status(200).json({ token, userId: existingUser._id })
       return
     }
     res.status(401).json({ message: 'Username or password is incorrect!' })
@@ -75,40 +99,17 @@ router.post('/login', async (req, res) => {
   res.status(401).json({ message: 'Username or password is incorrect!' })
 })
 
-// SPECIFIC POST
-// everything after the http://localhost:3000/post will be the postId
-// we can find a specific post by id
-// router.get('/get/:postId', async (req, res) => {
-//   try {
-//     const post = await Post.findById(req.params.postId)
-//     res.json(post)
-//   } catch (err) {
-//     res.json({ message: err })
-//   }
-// })
+// Delete all sessions.
+router.delete('/delete-all-sessions', async (req, res) => {
+  if (process.env.SESSION_SECRET_KEY === req.body.key) {
+    try {
+      Session.collection.drop()
+      res.status(200).send('Deleted all sessions')
+    } catch (error) {
+      res.status(400).send('DB error')
+    }
+    res.status(404).send()
+  }
+})
 
-//Delete a specific post
-// router.delete('/delete/:postId', async (req, res) => {
-//   try {
-//     const removedPost = await Post.remove({ _id: req.params.postId })
-//     res.json(removedPost)
-//   } catch (err) {
-//     res.json({ message: err })
-//   }
-// })
-
-//Update  a post
-// router.patch('/update/:postId', async (req, res) => {
-//   try {
-//     const updatedPost = await Post.updateOne(
-//       { _id: req.params.postId },
-//       {
-//         $set: { title: req.body.title },
-//       }
-//     )
-//     res.json(updatedPost)
-//   } catch (err) {
-//     res.json({ message: err })
-//   }
-// })
 module.exports = router

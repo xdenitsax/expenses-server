@@ -4,8 +4,8 @@ const Transaction = require('../models/Transaction')
 const User = require('../models/User')
 
 // Get all transactions for the specific user.
-router.get('/', async (req, res) => {
-  const { userId } = req.body
+router.get('/:userId', async (req, res) => {
+  const { userId } = req.params
   try {
     // Get transactions.
     const user = await User.findOne({ _id: userId })
@@ -14,7 +14,8 @@ router.get('/', async (req, res) => {
       return
     }
     const transactions = await Transaction.find({ userId })
-    res.status(200).json(transactions)
+    const sortedTransactions = transactions.sort((a, b) => b.date - a.date)
+    res.status(200).json(sortedTransactions)
   } catch (error) {
     res.json({ message: error })
   }
@@ -22,12 +23,13 @@ router.get('/', async (req, res) => {
 
 // Create a transaction.
 router.post('/create', async (req, res) => {
-  const { title, amount, category, userId } = req.body
+  const { title, amount, category, userId, isExpense } = req.body
   const transaction = new Transaction({
     title,
     amount,
     category,
     userId,
+    isExpense,
   })
   try {
     const user = await User.findOne({ _id: userId })
@@ -66,8 +68,10 @@ router.patch('/update', async (req, res) => {
 
 //Delete a specific transaction
 router.delete('/delete/:transactionId', async (req, res) => {
+  console.log(req)
   try {
     const deletedTransaction = await Transaction.deleteOne({ _id: req.params.transactionId })
+    console.log(deletedTransaction)
     res.status(204).send()
   } catch (error) {
     res.status(400).json({ message: error })
