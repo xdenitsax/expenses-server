@@ -4,7 +4,10 @@ const { v4: uuidv4 } = require('uuid')
 const User = require('../models/User')
 const Session = require('../models/Session')
 
-// Get all users
+// Utils.
+const { checkIfTokenIsValid, updateUserToken } = require('../utils/index')
+
+// Get all users.
 router.get('/', async (req, res) => {
   try {
     const users = await User.find()
@@ -14,49 +17,29 @@ router.get('/', async (req, res) => {
   }
 })
 
-const checkAndUpdateToken = async (req, res) => {
+// Get single user.
+router.get('/:userId', async (req, res) => {
   const { token } = req.headers
   const { userId } = req.params
   try {
-    const session = await Session.findOne({ token })
-    if (!session) {
-      return 'Expired token'
-    }
-    const timeDiff = (new Date(Date.now()) - session.lastUsedAt) / 1000 / 60
-    if (timeDiff < 10) {
-      const user = await User.findOne({ _id: userId })
-      if (!user) {
-        return 'User does not exist'
-      }
-      return user
-    }
-    return 'Expired token'
-  } catch (error) {
-    return error
-  }
-}
-
-// Get single user.
-router.get('/:userId', async (req, res) => {
-  // console.log(req.headers.token, req.params.userId)
-  try {
-    const user = await checkAndUpdateToken(req, res)
-    if (user === 'Expired token') {
-      return res.status(401).json({ message: 'Expired token' })
+    const user = await checkIfTokenIsValid(token, userId)
+    if (user === 'Invalid token') {
+      res.status(401).json({ message: 'Invalid token' })
+      return
     }
     if (user === 'User does not exist') {
-      return res.status(400).json({ message: 'User does not exist' })
+      res.status(400).json({ message: 'User does not exist' })
+      return
     }
     // Update user token.
-    let lastUsedAt = new Date(Date.now())
-    await Session.findOneAndUpdate({ token: req.headers.token }, { lastUsedAt })
-    return res.status(200).json({ firstName: user.firstName, lastName: user.lastName })
+    updateUserToken(token)
+    res.status(200).json({ firstName: user.firstName, lastName: user.lastName })
   } catch (error) {
     res.json({ message: error })
   }
 })
 
-// Create user
+// Create user.
 router.post('/register', async (req, res) => {
   const existingUser = await User.findOne({ username: req.body.username })
   if (existingUser === null) {
@@ -77,7 +60,7 @@ router.post('/register', async (req, res) => {
   }
 })
 
-//Login
+// Login.
 router.post('/login', async (req, res) => {
   const existingUser = await User.findOne({ username: req.body.username })
   if (existingUser !== null) {
