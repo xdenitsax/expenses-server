@@ -7,12 +7,12 @@ require('dotenv/config')
 app.use(express.json())
 
 //Import Routes
-const routes = require('./routes/routes')
+const transactions = require('./routes/transactions')
 const users = require('./routes/users')
 //Middleware -> we can have multiple middlewere
 // Prevents CORS errors.
 app.use(cors())
-app.use('/transactions', routes)
+app.use('/transactions', transactions)
 app.use('/users', users)
 
 // ROUTS
@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 //Connect to DB
 mongoose.connect(
   process.env.DB_CONNECTION,
-  { useNewUrlParser: true, useUnifiedTopology: true },
+  { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false },
 
   () => console.log('Conected to Database')
 )
