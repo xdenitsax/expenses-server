@@ -1,4 +1,7 @@
 node_modules
+.elasticbeanstalk/
 .env
+
+# other
 **/.DS_Store
 .DS_Store
