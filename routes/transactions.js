@@ -95,7 +95,7 @@ router.patch('/update', async (req, res) => {
   }
 })
 
-//Delete a specific transaction
+// Delete a specific transaction.
 router.delete('/delete/:transactionId', async (req, res) => {
   const { token } = req.headers
   const { userId } = req.body

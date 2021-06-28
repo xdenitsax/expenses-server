@@ -82,6 +82,29 @@ router.post('/login', async (req, res) => {
   res.status(401).json({ message: 'Username or password is incorrect!' })
 })
 
+// Delete single session.
+router.delete('/logout/:userId', async (req, res) => {
+  const { token } = req.headers
+  const { userId } = req.params
+  try {
+    const user = await checkIfTokenIsValid(token, userId)
+    if (user === 'Invalid token') {
+      res.status(401).json({ message: 'Invalid token' })
+      return
+    }
+    if (user === 'User does not exist') {
+      res.status(400).json({ message: 'User does not exist' })
+      return
+    }
+
+    await Session.findOneAndDelete({ token })
+    res.status(204).send()
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({ message: error._message })
+  }
+})
+
 // Delete all sessions.
 router.delete('/delete-all-sessions', async (req, res) => {
   if (process.env.SESSION_SECRET_KEY === req.body.key) {
